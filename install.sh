@@ -296,18 +296,18 @@ confirm_install_agents() {
         if [[ "${SOURCE_MODE}" == "remote" ]]; then
             if download_agent "${agent_file}" "${dest}/${agent_file}"; then
                 echo -e "  ${CHECK} ${agent_file%.md}"
-                ((ok++))
+                ok=$((ok+1))
             else
                 echo -e "  ${CROSS} ${agent_file%.md} (download failed)"
-                ((fail++))
+                fail=$((fail+1))
             fi
         else
             if cp "${LOCAL_AGENTS_DIR}/${agent_file}" "${dest}/${agent_file}"; then
                 echo -e "  ${CHECK} ${agent_file%.md}"
-                ((ok++))
+                ok=$((ok+1))
             else
                 echo -e "  ${CROSS} ${agent_file%.md}"
-                ((fail++))
+                fail=$((fail+1))
             fi
         fi
     done
@@ -450,7 +450,7 @@ bash_install_docs() {
     local ok=0
     for bundle in "${bundles[@]}"; do
         if curl -sfL "${GITHUB_RAW}/docs/${bundle}" -o "${docs_dest}/${bundle}" 2>/dev/null; then
-            ((ok++))
+            ok=$((ok+1))
             [[ $((ok % 10)) -eq 0 ]] && echo -e "  ${CHECK} ${ok}/${#bundles[@]} downloaded..."
         fi
     done
