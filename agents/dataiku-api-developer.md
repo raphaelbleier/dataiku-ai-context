@@ -97,3 +97,11 @@ result = deployment.predict_dataframe(df)
 - Use `wait_for_completion()` when triggering async jobs
 - Paginate large list responses (use `limit` and `offset`)
 - Check instance version compatibility for newer API features
+
+## Graph navigation
+Find the most relevant doc bundles for any topic using the knowledge graph:
+```bash
+python docs/graph_query.py "your topic here"
+# e.g.: python docs/graph_query.py "REST API project deployer prediction"
+```
+Or load `docs/graph.json` and traverse `bundles[name].outbound_bundle_refs` for related topics.

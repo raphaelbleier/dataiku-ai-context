@@ -77,3 +77,11 @@ GROUP BY user_id
 - Use scenario reporters (email, Slack) for production monitoring
 - Prefer push-down SQL over Python pandas for SQL-compatible sources
 - Set explicit build modes (non-recursive, force rebuild) in scenarios
+
+## Graph navigation
+Find the most relevant doc bundles for any topic using the knowledge graph:
+```bash
+python docs/graph_query.py "your topic here"
+# e.g.: python docs/graph_query.py "spark partitioning recipe automation"
+```
+Or load `docs/graph.json` and traverse `bundles[name].outbound_bundle_refs` for related topics.

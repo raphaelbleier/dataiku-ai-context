@@ -58,3 +58,11 @@ project = client.get_project("MY_PROJECT_KEY")
 - Check existing code environment before suggesting new packages
 - When creating recipes, follow the project's existing naming conventions
 - Validate schemas match between input and output datasets
+
+## Graph navigation
+Find the most relevant doc bundles for any topic using the knowledge graph:
+```bash
+python docs/graph_query.py "your topic here"
+```
+Or load `docs/graph.json` and traverse `bundles[name].outbound_bundle_refs` for related topics.
+The graph contains 1,751 section nodes and 564 cross-bundle edges across 87 bundles.

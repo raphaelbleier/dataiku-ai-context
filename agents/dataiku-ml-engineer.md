@@ -76,3 +76,11 @@ mes_handle = mes.get_as_core_model_evaluation_store()
 - Check model performance on evaluation data before deploying
 - Recommend Model Evaluation Stores for ongoing monitoring
 - Use Feature Store for shared, reusable features across projects
+
+## Graph navigation
+Find the most relevant doc bundles for any topic using the knowledge graph:
+```bash
+python docs/graph_query.py "your topic here"
+# e.g.: python docs/graph_query.py "model evaluation store deployment"
+```
+Or load `docs/graph.json` and traverse `bundles[name].outbound_bundle_refs` for related topics.

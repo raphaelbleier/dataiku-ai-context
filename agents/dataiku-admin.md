@@ -87,3 +87,11 @@ print(status)  # {"ok": True, ...}
 - Schedule regular backups; test restore procedures
 - Monitor DSS logs at $DATADIR/run/ for operational issues
 - Use Fleet Manager for >3 node deployments
+
+## Graph navigation
+Find the most relevant doc bundles for any topic using the knowledge graph:
+```bash
+python docs/graph_query.py "your topic here"
+# e.g.: python docs/graph_query.py "LDAP security kubernetes installation"
+```
+Or load `docs/graph.json` and traverse `bundles[name].outbound_bundle_refs` for related topics.

@@ -455,12 +455,16 @@ bash_install_docs() {
         fi
     done
 
-    # Write INDEX.md
+    # Write INDEX.md + graph files
     curl -sfL "${GITHUB_RAW}/docs/INDEX.md" -o "${docs_dest}/INDEX.md" 2>/dev/null
+    curl -sfL "${GITHUB_RAW}/docs/graph.json" -o "${docs_dest}/graph.json" 2>/dev/null \
+        && echo -e "  ${CHECK} graph.json"
+    curl -sfL "${GITHUB_RAW}/docs/graph_query.py" -o "${docs_dest}/graph_query.py" 2>/dev/null \
+        && echo -e "  ${CHECK} graph_query.py"
 
     # Create tool config
     write_tool_config "$tool" "$target" "$docs_dest"
-    echo -e "\n${CHECK} ${ok} bundles → ${docs_dest}"
+    echo -e "\n${CHECK} ${ok} bundles + graph → ${docs_dest}"
 }
 
 write_tool_config() {

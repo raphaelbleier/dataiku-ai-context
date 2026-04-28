@@ -78,3 +78,11 @@ for r in results.results:
 - Use Evaluation Recipes to measure prompt quality before going to production
 - Prefer structured outputs (JSON mode) for LLM responses used in pipelines
 - Log LLM calls with metadata for cost tracking and debugging
+
+## Graph navigation
+Find the most relevant doc bundles for any topic using the knowledge graph:
+```bash
+python docs/graph_query.py "your topic here"
+# e.g.: python docs/graph_query.py "LLM mesh knowledge bank RAG embeddings"
+```
+Or load `docs/graph.json` and traverse `bundles[name].outbound_bundle_refs` for related topics.

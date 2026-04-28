@@ -188,10 +188,15 @@ def bundle(docs_dir: Path) -> Path:
 def resolve_docs_dir(docs_dir: Path) -> Path:
     if not docs_dir.exists():
         sys.exit(f"ERROR: docs dir not found: {docs_dir}\nRun 'bundle' first.")
+    # Accept either the raw scraped dir (with bundles/ subdir) or the bundle dir itself
     bundle_dir = docs_dir / BUNDLE_DIR_NAME
-    if not bundle_dir.exists():
-        sys.exit(f"ERROR: bundles not found in {docs_dir}\nRun 'bundle' first.")
-    return bundle_dir
+    if bundle_dir.exists():
+        return bundle_dir
+    # If the dir itself contains .md files, treat it as the bundle dir
+    has_md = any(e.name.endswith(".md") for e in os.scandir(docs_dir) if e.is_file())
+    if has_md:
+        return docs_dir
+    sys.exit(f"ERROR: bundles not found in {docs_dir}\nRun 'bundle' first.")
 
 
 def copy_bundles(bundle_dir: Path, dest: Path):
@@ -201,13 +206,14 @@ def copy_bundles(bundle_dir: Path, dest: Path):
     count = 0
     # use os.scandir — more reliable than Path.glob on WSL/Windows filesystems
     for entry in os.scandir(bundle_dir):
-        if entry.is_file() and entry.name.endswith(".md"):
+        if entry.is_file() and (entry.name.endswith(".md") or entry.name in ("graph.json", "graph_query.py")):
             try:
                 shutil.copy2(entry.path, dest / entry.name)
-                count += 1
+                if entry.name.endswith(".md"):
+                    count += 1
             except OSError as e:
                 print(f"  WARNING: skipped {entry.name}: {e}")
-    print(f"  Copied {count} bundle files → {dest}")
+    print(f"  Copied {count} bundle files + graph → {dest}")
 
 
 def read_existing(path: Path) -> str:
@@ -449,6 +455,11 @@ def main():
     p_install.add_argument("--target", type=Path, default=Path("."),
                            help="Project directory to install into (default: .)")
 
+    # build-graph
+    p_graph = sub.add_parser("build-graph", help="Build docs/graph.json knowledge graph from bundles")
+    p_graph.add_argument("--docs-dir", type=Path, default=DOCS_DIR_DEFAULT,
+                         help=f"Path to docs/ dir containing bundles (default: {DOCS_DIR_DEFAULT})")
+
     # list
     sub.add_parser("list", help="List supported tools")
 
@@ -464,6 +475,16 @@ def main():
     if args.command == "bundle":
         print(f"Bundling docs from {args.docs_dir} ...")
         bundle(args.docs_dir)
+        return
+
+    if args.command == "build-graph":
+        import subprocess
+        script = Path(__file__).parent / "build_graph.py"
+        docs_dir = args.docs_dir
+        # Resolve to the bundles subdir if given the raw scraped dir
+        if (docs_dir / "bundles").exists():
+            docs_dir = docs_dir / "bundles"
+        subprocess.run([sys.executable, str(script), "--docs-dir", str(docs_dir)], check=True)
         return
 
     if args.command == "install":
