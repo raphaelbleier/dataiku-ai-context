@@ -21,10 +21,28 @@ Docs scraped from [doc.dataiku.com](https://doc.dataiku.com/dss/latest/) and [de
 
 ## Quick install
 
+**Linux / macOS**
 ```bash
 git clone https://github.com/raphaelbleier/dataiku-ai-context.git
 cd dataiku-ai-context
 ./install.sh
+```
+
+**Windows (PowerShell)**
+```powershell
+git clone https://github.com/raphaelbleier/dataiku-ai-context.git
+cd dataiku-ai-context
+.\install.ps1
+```
+
+**One-liners (no clone required)**
+```bash
+# Linux / macOS
+curl -sL https://raw.githubusercontent.com/raphaelbleier/dataiku-ai-context/main/install.sh | bash
+```
+```powershell
+# Windows
+iex (irm https://raw.githubusercontent.com/raphaelbleier/dataiku-ai-context/main/install.ps1)
 ```
 
 The interactive installer lets you choose:
@@ -50,16 +68,27 @@ Six specialized subagents, auto-loaded by Claude Code from `~/.claude/agents/`:
 ### Install agents only
 
 ```bash
-# Global (all projects)
+# Linux / macOS — interactive
 ./install.sh
 # → choose "Claude Code agents" → "Global"
 
-# Or copy manually
+# Linux / macOS — manual
 cp agents/*.md ~/.claude/agents/
 
-# Or project-local
-mkdir -p .claude/agents
-cp agents/*.md .claude/agents/
+# Linux / macOS — project-local
+mkdir -p .claude/agents && cp agents/*.md .claude/agents/
+```
+
+```powershell
+# Windows — interactive
+.\install.ps1
+
+# Windows — manual (global)
+Copy-Item agents\*.md "$HOME\.claude\agents\"
+
+# Windows — project-local
+New-Item -ItemType Directory -Force .claude\agents | Out-Null
+Copy-Item agents\*.md .claude\agents\
 ```
 
 ---
@@ -90,15 +119,28 @@ docs/
 
 ## Supported AI tools
 
-| Tool | What gets created |
-|------|------------------|
-| **Claude Code** | `.claude/dataiku/` + `CLAUDE.md` snippet |
-| **Cursor** | `.cursor/dataiku/` + `.cursor/rules/dataiku.mdc` |
-| **GitHub Copilot** | `.github/dataiku/` + `.github/copilot-instructions.md` |
-| **Windsurf** | `.windsurf/dataiku/` + `.windsurfrules` |
-| **Aider** | `dataiku-docs/` + `DATAIKU_DOCS.md` |
-| **Continue.dev** | `.continue/dataiku/` + `.continue/config.json` |
-| **Cline** | `.cline/dataiku/` + `.clinerules` |
+| Tool | Doc bundles | Agent rules |
+|------|-------------|-------------|
+| **Claude Code** | `.claude/dataiku/` | `~/.claude/agents/*.md` |
+| **Cursor** | `.cursor/dataiku/` | `.cursor/rules/dataiku-*.mdc` |
+| **GitHub Copilot** | `.github/dataiku/` | `.github/instructions/dataiku-*.instructions.md` |
+| **Windsurf** | `.windsurf/dataiku/` | `.windsurf/rules/dataiku-*.md` |
+| **Aider** | `dataiku-docs/` | `dataiku-docs/dataiku-*.md` |
+| **Continue.dev** | `.continue/dataiku/` | `.continue/rules/dataiku-*.md` |
+| **Cline** | `.cline/dataiku/` | `.clinerules/dataiku-*.md` |
+
+Each tool gets **6 domain-specific rule files** matching the Claude Code agents:
+
+| Rule | Covers |
+|------|--------|
+| `dataiku-developer` | Flow, datasets, recipes, project structure |
+| `dataiku-data-engineer` | Pipelines, Spark/SQL, scenarios, automation |
+| `dataiku-ml-engineer` | Visual ML, AutoML, MLflow, model deployment |
+| `dataiku-genai-engineer` | LLM Mesh, AI agents, RAG, Knowledge Banks |
+| `dataiku-api-developer` | Python API, REST API, API Node, Project Deployer |
+| `dataiku-admin` | Installation, users, connections, code envs, security |
+
+The installer copies both doc bundles and rule files in one step.
 
 ### Install docs for a specific tool
 
@@ -154,20 +196,23 @@ python tools/dataiku-docs.py bundle  # rebuilds bundles
 
 ```
 dataiku-ai-context/
-├── agents/                 # Claude Code subagent definitions
-│   ├── dataiku-developer.md
-│   ├── dataiku-ml-engineer.md
-│   ├── dataiku-data-engineer.md
-│   ├── dataiku-genai-engineer.md
-│   ├── dataiku-api-developer.md
-│   └── dataiku-admin.md
+├── agents/                 # Claude Code subagent definitions (6 files)
+│   └── dataiku-*.md
+├── rules/                  # Agent rules for other AI coding tools
+│   ├── cursor/             # .mdc files for Cursor
+│   ├── copilot/            # .instructions.md for GitHub Copilot
+│   ├── windsurf/           # .md files for Windsurf
+│   ├── aider/              # .md files for Aider
+│   ├── continue/           # .md files for Continue.dev
+│   └── cline/              # .md files for Cline
 ├── docs/                   # 87 bundled documentation files
 │   ├── INDEX.md
 │   └── *.md
 ├── tools/                  # Maintainer scripts
 │   ├── scrape_docs.py      # Re-scrapes Dataiku docs
 │   └── dataiku-docs.py     # Bundle + install CLI
-├── install.sh              # Interactive installer
+├── install.sh              # Interactive installer (Linux/macOS)
+├── install.ps1             # Interactive installer (Windows)
 ├── LICENSE
 └── README.md
 ```

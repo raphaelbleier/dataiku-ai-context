@@ -395,6 +395,7 @@ run_docs_installer() {
 
             if [[ -d "$docs_dir" ]]; then
                 "$py" "$script" install "$tool" --docs-dir "$docs_dir" --target "$target"
+                install_rules_local "$tool" "$target"
                 echo ""
                 press_enter
                 return
@@ -462,9 +463,75 @@ bash_install_docs() {
     curl -sfL "${GITHUB_RAW}/docs/graph_query.py" -o "${docs_dest}/graph_query.py" 2>/dev/null \
         && echo -e "  ${CHECK} graph_query.py"
 
+    # Install rules for this tool
+    install_rules_remote "$tool" "$target"
+
     # Create tool config
     write_tool_config "$tool" "$target" "$docs_dest"
     echo -e "\n${CHECK} ${ok} bundles + graph → ${docs_dest}"
+}
+
+# ---------------------------------------------------------------------------
+# Rules destination per tool
+# ---------------------------------------------------------------------------
+get_rules_dest() {
+    local tool="$1" target="$2"
+    case "$tool" in
+        cursor)   echo "${target}/.cursor/rules" ;;
+        copilot)  echo "${target}/.github/instructions" ;;
+        windsurf) echo "${target}/.windsurf/rules" ;;
+        aider)    echo "${target}/dataiku-docs" ;;
+        continue) echo "${target}/.continue/rules" ;;
+        cline)    echo "${target}/.clinerules" ;;
+        claude)   echo "" ;;  # Claude uses ~/.claude/agents, handled separately
+        *)        echo "" ;;
+    esac
+}
+
+get_rules_ext() {
+    case "$1" in
+        cursor)   echo ".mdc" ;;
+        copilot)  echo ".instructions.md" ;;
+        *)        echo ".md" ;;
+    esac
+}
+
+install_rules_local() {
+    local tool="$1" target="$2"
+    [[ "$tool" == "claude" ]] && return
+    local rules_src="${SCRIPT_DIR}/rules/${tool}"
+    [[ ! -d "$rules_src" ]] && return
+    local rules_dest; rules_dest="$(get_rules_dest "$tool" "$target")"
+    [[ -z "$rules_dest" ]] && return
+    mkdir -p "$rules_dest"
+    local count=0
+    for f in "${rules_src}"/*; do
+        [[ -f "$f" ]] || continue
+        cp "$f" "${rules_dest}/$(basename "$f")"
+        count=$((count+1))
+    done
+    [[ $count -gt 0 ]] && echo -e "  ${CHECK} ${count} rules → ${rules_dest}"
+}
+
+install_rules_remote() {
+    local tool="$1" target="$2"
+    [[ "$tool" == "claude" ]] && return
+    local rules_dest; rules_dest="$(get_rules_dest "$tool" "$target")"
+    [[ -z "$rules_dest" ]] && return
+    local ext; ext="$(get_rules_ext "$tool")"
+
+    local agents=("dataiku-developer" "dataiku-data-engineer" "dataiku-ml-engineer"
+                  "dataiku-genai-engineer" "dataiku-api-developer" "dataiku-admin")
+    mkdir -p "$rules_dest"
+    local ok=0
+    for agent in "${agents[@]}"; do
+        local filename="${agent}${ext}"
+        if curl -sfL "${GITHUB_RAW}/rules/${tool}/${filename}" \
+                -o "${rules_dest}/${filename}" 2>/dev/null; then
+            ok=$((ok+1))
+        fi
+    done
+    [[ $ok -gt 0 ]] && echo -e "  ${CHECK} ${ok} rules → ${rules_dest}"
 }
 
 write_tool_config() {
